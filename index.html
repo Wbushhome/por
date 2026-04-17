@@ -155,6 +155,37 @@ body.desktop .desktop-table input.row-check{width:16px;height:16px}
 body.desktop .desk-bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 12px 8px}
 body.desktop .desk-bulk .sel-count{font-size:12px;font-weight:700;color:var(--blue-d);background:var(--blue-bg);padding:6px 10px;border-radius:8px}
 
+body.desktop .table-wrap{display:block;padding:0 12px 110px}
+body.desktop .table-box{background:transparent;border:none;box-shadow:none;max-height:none;overflow:visible}
+body.desktop .desktop-table{min-width:unset;width:100%;border-collapse:separate;border-spacing:0 8px}
+body.desktop .desktop-table thead{display:none}
+body.desktop .desktop-table tbody tr{display:block;background:var(--surface);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);border-left:4px solid var(--gray-ll);margin-bottom:0}
+body.desktop .desktop-table tbody tr.status-drozsi{border-left-color:var(--red)}
+body.desktop .desktop-table tbody tr.status-tansi{border-left-color:var(--green)}
+body.desktop .desktop-table tbody tr.status-remis{border-left-color:var(--yellow)}
+body.desktop .desktop-table tbody tr.selected-row{background:var(--blue-bg)}
+body.desktop .desktop-table tbody tr.active-row{outline:none}
+body.desktop .desktop-table td{border:none;padding:0;white-space:normal}
+body.desktop .desktop-table td.chk{padding:12px 10px 0 12px;width:auto;display:inline-flex;vertical-align:top}
+body.desktop .desktop-main{display:inline-block;width:calc(100% - 54px);padding:10px 12px 10px 0;vertical-align:top}
+body.desktop .desktop-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px}
+body.desktop .desktop-meta{font-size:11px;color:var(--gray-l);margin-bottom:8px}
+body.desktop .desktop-grid{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:6px 10px}
+body.desktop .desktop-grid .lb{color:var(--gray-l);font-size:10px;font-weight:600;text-transform:uppercase}
+body.desktop .desktop-grid .vl{font-weight:700;font-size:13px;font-family:var(--mono)}
+body.desktop .desktop-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+body.desktop .desktop-expand{margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-lll)}
+body.desktop .desktop-details{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px 12px;margin-bottom:10px}
+body.desktop .desktop-details .lb{color:var(--gray-l);font-size:10px;font-weight:600}
+body.desktop .desktop-details .vl{font-size:12px;font-weight:600}
+body.desktop .desktop-distrow{display:flex;justify-content:space-between;padding:4px 8px;border-radius:6px;margin-bottom:3px;background:#f8fafc;font-size:12px}
+body.desktop .desktop-distrow.best{background:var(--green-bg)}
+body.desktop .desktop-distrow.best .dn{font-weight:700;color:var(--green-d)}
+@media (max-width: 1500px){
+  body.desktop .desktop-grid{grid-template-columns:repeat(3,minmax(120px,1fr))}
+  body.desktop .desktop-details{grid-template-columns:repeat(2,minmax(120px,1fr))}
+}
+
 .desktop-table tr.spacer-row td{padding:0 !important;border:none !important;height:auto !important;background:transparent !important}
 .desktop-table tbody tr{height:34px}
 
@@ -197,7 +228,7 @@ const toNum=v=>{if(v==null)return null;if(typeof v==='number')return isNaN(v)?nu
 const money=v=>(v==null||isNaN(v))?'—':v.toFixed(2);
 const pf=v=>(v==null||isNaN(v))?'—':v.toFixed(2)+'%';
 
-let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,activeRowKey:null,lastSelectedRowKey:null,desktopKeyboardBound:false,desktopScrollTop:0,desktopVirtualStart:0,desktopViewportRows:40};
+let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,lastSelectedRowKey:null,desktopScrollTop:0,desktopVirtualStart:0,desktopViewportRows:40};
 
 const AUTO_DATA = {
   distUrl: 'data/latest_wszyscy_dystrybutorzy.xlsx',
@@ -277,8 +308,8 @@ window.addEventListener('resize', ()=>{
     cl.classList.toggle('one-column', f.length < 2);
   }
 });
-function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,ar:S.activeRowKey,dst:S.desktopScrollTop}));}catch(e){}}
-function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.ar)S.activeRowKey=s.ar;if(s.dst!=null)S.desktopScrollTop=s.dst;}catch(e){}}
+function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,,dst:S.desktopScrollTop}));}catch(e){}}
+function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.dst!=null)S.desktopScrollTop=s.dst;}catch(e){}}
 
 function parseXL(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){no(err);}};r.onerror=()=>no(new Error('Błąd'));r.readAsArrayBuffer(f);})}
 function expXL(d,fn){const ws=XLSX.utils.json_to_sheet(d);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Wynik');XLSX.writeFile(wb,fn);}
@@ -346,25 +377,6 @@ function selAll(){getFilt().slice(0,500).forEach(r=>S.selRows.add(r.row_key));S.
 function doExp(){const d=getFilt().map(r=>{const o={};COLS.forEach(c=>o[TIT[c]||c]=r[c]);return o;});if(!d.length){S.status='Brak.';render();return;}expXL(d,'wynik_porownania.xlsx');S.status='Eksportowano.';render();}
 
 
-function ensureActiveRow(f){
-  if(!f.length){S.activeRowKey=null;return;}
-  if(!S.activeRowKey || !f.some(r=>r.row_key===S.activeRowKey)) S.activeRowKey=f[0].row_key;
-}
-
-function moveActiveRow(step){
-  const f=getFilt();
-  if(!f.length) return;
-  ensureActiveRow(f);
-  let idx=f.findIndex(r=>r.row_key===S.activeRowKey);
-  if(idx<0) idx=0;
-  idx=Math.max(0, Math.min(f.length-1, idx+step));
-  S.activeRowKey=f[idx].row_key;
-  S.expRow=S.activeRowKey;
-  save();
-  updCards();
-  const elRow=document.querySelector(`tr[data-row-key="${S.activeRowKey}"]`);
-  if(elRow) elRow.scrollIntoView({block:'nearest'});
-}
 
 function toggleSelectedRowRange(targetKey, withRange){
   const f=getFilt();
@@ -384,35 +396,6 @@ function toggleSelectedRowRange(targetKey, withRange){
   const [start,end]=a<b?[a,b]:[b,a];
   for(let i=start;i<=end;i++) S.selRows.add(f[i].row_key);
   S.lastSelectedRowKey=targetKey;
-}
-
-function bindDesktopKeyboard(){
-  if(S.desktopKeyboardBound) return;
-  S.desktopKeyboardBound = true;
-  document.addEventListener('keydown', (e)=>{
-    const mode=document.body.getAttribute('data-device-mode') || detectDeviceMode();
-    if(mode!=='desktop') return;
-    const tag=(document.activeElement && document.activeElement.tagName || '').toLowerCase();
-    const inInput=['input','textarea','select'].includes(tag);
-    if(inInput) return;
-
-    if(e.key==='ArrowDown'){
-      e.preventDefault();
-      moveActiveRow(1);
-      return;
-    }
-    if(e.key==='ArrowUp'){
-      e.preventDefault();
-      moveActiveRow(-1);
-      return;
-    }
-    if(e.key===' '){
-      if(!S.activeRowKey) return;
-      e.preventDefault();
-      togRef(S.activeRowKey);
-      return;
-    }
-  });
 }
 
 let _st=null;function sDeb(){if(_st)clearTimeout(_st);_st=setTimeout(()=>updCards(),80);}
@@ -458,7 +441,7 @@ function updCards(){
     statSelect.value=S.filters.status||'';
 
     const tb=el('div',{class:'desk-toolbar'},
-      el('span',{class:'desk-label'},'Globalne filtry:'),
+      el('span',{class:'desk-label'},'Filtry:'),
       prodSelect,
       statSelect,
       el('button',{class:'table-btn',onClick:()=>{S.filters.producent='';S.filters.status='';S.filters._global='';const si=document.getElementById('si');if(si)si.value='';updCards();}},'Wyczyść filtry'),
@@ -476,12 +459,11 @@ function updCards(){
       ));
     }
 
-    ensureActiveRow(f);
     cc.appendChild(renderDesktopTable(f));
     return;
   }
 
-  const list=el('div',{class:'card-list'+(f.length<2?' one-column':'')});const MX=500;
+  const list=el('div',{class:'card-list'+(f.length<2?' one-column':'')});const MX=300;
   f.slice(0,MX).forEach(r=>list.appendChild(mkCard(r)));
   if(f.length>MX)list.appendChild(el('p',{class:'lnote'},`${MX} z ${f.length}. Użyj wyszukiwania.`));
   cc.appendChild(list);
@@ -635,67 +617,102 @@ function updateDesktopVirtualRows(rows, tbody, colCount){
 }
 
 
+
 function renderDesktopTable(rows){
   const wrap=el('div',{class:'table-wrap'});
   const box=el('div',{class:'table-box'});
   const table=el('table',{class:'desktop-table'});
-  const thead=el('thead');
-  const hr=el('tr');
-  const cols=[
-    ['product_id','ID'],['ean','EAN'],['producent','Producent'],['nazwa','Nazwa'],
-    ['purchase_price','Cena zak'],['floor_purchase_price','Cena dno'],['sale_price','Famix'],
-    ['market_lowest_price','Naj. cena'],['cheapest_distributor','Naj. dystr.'],
-    ['reference_mode','Licz od c'],['reference_price','Cena bazowa'],['reference_distributor','Dystrybutor ceny'],
-    ['price_x','Cena X'],['price_x_source','Źr'],['margin_floor_to_price_x_pct','Marża dno %'],
-    ['margin_purchase_to_price_x_pct','Marża zakup %'],['difference_amount','Różnica kw'],['difference_percent','Różnica %'],['status','Status']
-  ];
+  const tbody=el('tbody');
 
-  const visibleSlice = rows.slice(S.desktopVirtualStart, Math.min(rows.length, S.desktopVirtualStart + S.desktopViewportRows));
-  const allVisibleSelected = visibleSlice.length && visibleSlice.every(r=>S.selRows.has(r.row_key));
-  hr.appendChild(el('th',{class:'chk'},
-    el('input',{
+  rows.slice(0,500).forEach(r=>{
+    const statusCls = r.status==='Drożsi'?'status-drozsi':r.status==='Tańsi'?'status-tansi':r.status==='Remis'?'status-remis':'';
+    const selectedCls = S.selRows.has(r.row_key)?' selected-row':'';
+    const isExpanded = S.expRow===r.row_key;
+    const tr=el('tr',{
+      class: statusCls + selectedCls,
+      'data-row-key': r.row_key
+    });
+
+    const cb=el('input',{
       type:'checkbox',
       class:'row-check',
-      checked: allVisibleSelected ? 'checked' : null,
+      checked: S.selRows.has(r.row_key) ? 'checked' : null,
       onClick:(e)=>e.stopPropagation(),
       onChange:(e)=>{
-        const slice = rows.slice(S.desktopVirtualStart, Math.min(rows.length, S.desktopVirtualStart + S.desktopViewportRows));
-        if(e.target.checked) slice.forEach(r=>S.selRows.add(r.row_key));
-        else slice.forEach(r=>S.selRows.delete(r.row_key));
+        toggleSelectedRowRange(r.row_key, e.shiftKey);
+        save();
         updCards();
       }
-    })
-  ));
-  cols.forEach(([key,label])=>{
-    hr.appendChild(el('th',{onClick:()=>hSort(key),style:{cursor:'pointer'}},label+(S.sortCol===key?(S.sortDesc?' ▼':' ▲'):'')));
+    });
+
+    tr.appendChild(el('td',{class:'chk'},cb));
+
+    const main=el('td',{class:'desktop-main'});
+    main.appendChild(el('div',{class:'desktop-name'},r.nazwa||'—'));
+    main.appendChild(el('div',{class:'desktop-meta'},`${r.producent||'—'} · ${r.ean||'—'} · ${r.status||'—'}`));
+
+    const grid=el('div',{class:'desktop-grid'},
+      el('div',{},el('div',{class:'lb'},'Famix'),el('div',{class:'vl'},money(r.sale_price))),
+      el('div',{},el('div',{class:'lb'},'Naj. cena'),el('div',{class:'vl vr'},money(r.market_lowest_price))),
+      el('div',{},el('div',{class:'lb'},'Cena X'),el('div',{class:'vl vb'},money(r.price_x))),
+      el('div',{},el('div',{class:'lb'},'Różn.'),el('div',{class:'vl '+(r.difference_amount>0?'vr':r.difference_amount<0?'vg':'')},r.difference_amount!=null?`${r.difference_amount>0?'+':''}${money(r.difference_amount)}`:'—')),
+      el('div',{},el('div',{class:'lb'},'Marża zak.'),el('div',{class:'vl'},pf(r.margin_purchase_to_price_x_pct))),
+      el('div',{},el('div',{class:'lb'},'Dystr.'),el('div',{class:'vl',style:{fontFamily:'var(--sans)',fontSize:'12px'}},r.cheapest_distributor||'—'))
+    );
+    main.appendChild(grid);
+
+    const actions=el('div',{class:'desktop-actions'},
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();togRef(r.row_key);}},`Tryb ${r.reference_mode===2?'→ 1':'→ 2'}`),
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.editRow=r.row_key;S.editVal=r.price_x!=null?r.price_x.toFixed(2):'';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Cena X'),
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.expRow=isExpanded?null:r.row_key;updCards();}},isExpanded?'Zwiń':'Szczegóły'),
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();if(confirm('Usunąć?'))delRow(r.row_key);}},'Usuń')
+    );
+    main.appendChild(actions);
+
+    if(isExpanded){
+      const det=el('div',{class:'desktop-expand'});
+      const details=el('div',{class:'desktop-details'},
+        detItem('ID', r.product_id),
+        detItem('Cena zak.', money(r.purchase_price)),
+        detItem('Cena dno', money(r.floor_purchase_price)),
+        detItem('Licz od c', r.reference_mode),
+        detItem('Cena bazowa', money(r.reference_price)),
+        detItem('Dystrybutor ceny', r.reference_distributor||'—'),
+        detItem('Źródło', r.price_x_source||'—'),
+        detItem('Marża dno %', pf(r.margin_floor_to_price_x_pct)),
+        detItem('Różnica %', pf(r.difference_percent))
+      );
+      det.appendChild(details);
+
+      const ds=gSD();
+      const so=ds.filter(d=>r._d&&r._d[d]!=null).map(d=>[d,r._d[d]]).sort((a,b)=>a[1]-b[1]);
+      if(so.length){
+        det.appendChild(el('p',{style:{fontSize:'11px',fontWeight:'700',color:'var(--gray)',marginBottom:'6px'}},'Dystrybutorzy:'));
+        const best=so[0][1];
+        so.forEach(([d,p])=>{
+          det.appendChild(el('div',{class:'desktop-distrow'+(Math.abs(p-best)<0.000001?' best':'')},
+            el('span',{class:'dn'},d+(Math.abs(p-best)<0.000001?' ◄':'')),
+            el('span',{class:'dp'},money(p))
+          ));
+        });
+      }
+      main.appendChild(det);
+    }
+
+    tr.appendChild(main);
+    tbody.appendChild(tr);
   });
-  hr.appendChild(el('th',{},'Akcje'));
-  thead.appendChild(hr);
-  const tbody=el('tbody');
-  table.appendChild(thead);
+
   table.appendChild(tbody);
   box.appendChild(table);
   wrap.appendChild(box);
 
-  const colCount = cols.length + 2;
-  updateDesktopVirtualRows(rows, tbody, colCount);
-
-  let rafPending = false;
-  box.addEventListener('scroll', ()=>{
-    S.desktopScrollTop = box.scrollTop;
-    if(rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(()=>{
-      rafPending = false;
-      updateDesktopVirtualRows(rows, tbody, colCount);
-    });
-  });
-
-  setTimeout(()=>{ box.scrollTop = S.desktopScrollTop||0; }, 0);
-
-  if(rows.length>1000)wrap.appendChild(el('p',{class:'lnote'},`Wyników jest ${rows.length}. W widoku desktop renderowane są tylko widoczne wiersze, żeby program działał szybciej.`));
-  wrap.appendChild(el('p',{class:'lnote'},'Sterowanie na komputerze: strzałka góra/dół zmienia aktywny wiersz, spacja przełącza cenę bazową 1 ↔ 2, dwuklik na wierszu też przełącza tryb.'));
+  if(rows.length>500)wrap.appendChild(el('p',{class:'lnote'},`Widok desktop pokazuje 500 rekordów. Zawęź filtry, jeśli chcesz pracować szybciej.`));
   return wrap;
+}
+
+function detItem(label, value){
+  return el('div',{},el('div',{class:'lb'},label),el('div',{class:'vl'},String(value??'—')));
 }
 
 function mkCard(row){
@@ -799,7 +816,7 @@ async function registerSW(){
 
 registerSW();
 
-load();render();bindDesktopKeyboard();autoLoadData();
+load();render();autoLoadData();
 </script>
 </body>
 </html>
