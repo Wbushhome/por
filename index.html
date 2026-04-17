@@ -128,7 +128,7 @@ button{font-family:var(--sans);cursor:pointer}input{font-family:var(--sans)}
 body.desktop .table-wrap{display:block;padding:0 12px 110px}
 body.desktop .card-list{display:none}
 .desk-toolbar{display:none}
-body.desktop .desk-toolbar{display:flex;gap:8px;align-items:center;padding:6px 12px 8px;flex-wrap:wrap}
+body.desktop .desk-toolbar{display:flex;gap:8px;align-items:center;padding:6px 12px 8px;flex-wrap:wrap;background:var(--bg);position:sticky;top:52px;z-index:85}
 .desk-filter{padding:9px 12px;border-radius:8px;border:1px solid var(--gray-ll);background:var(--surface);font-size:14px;min-width:180px}
 .desk-label{font-size:12px;font-weight:700;color:var(--gray)}
 .table-box{background:var(--surface);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:auto;border:1px solid var(--gray-ll)}
@@ -357,8 +357,6 @@ function updCards(){
     cc.appendChild(el('div',{class:'empty'},el('div',{class:'empty-icon'},mode==='mobile'?'📱':'🖥️'),el('p',{},'Przygotowywanie danych'),el('p',{},mode==='mobile'?'Tryb telefonu aktywny':'Tryb komputera aktywny')));
     return;
   }
-
-  const mode = document.body.getAttribute('data-device-mode') || detectDeviceMode();
 
   if(mode==='desktop'){
     const prodVals=[...new Set(S.resultDf.filter(r=>!S.delKeys.has(r.row_key)).map(r=>String(r.producent||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
