@@ -1,4 +1,4 @@
-const CACHE_NAME = 'porownywarka-cen-v3';
+const CACHE_NAME = 'porownywarka-cen-v4';
 const APP_FILES = [
   './',
   './index.html',

@@ -146,6 +146,15 @@ body.desktop .desk-toolbar{display:flex;gap:8px;align-items:center;padding:6px 1
 body.desktop .filter-row-wrap{display:block;padding:0 12px 8px}
 body.desktop .filter-row-wrap .status-text{display:inline-block}
 
+body.desktop .table-box{max-height:calc(100vh - 230px)}
+body.desktop .desktop-table tr{cursor:pointer}
+body.desktop .desktop-table tr.selected-row td{background:#dbeafe !important}
+body.desktop .desktop-table tr.active-row td{outline:2px solid #60a5fa; outline-offset:-2px}
+body.desktop .desktop-table td.chk, body.desktop .desktop-table th.chk{width:42px;text-align:center}
+body.desktop .desktop-table input.row-check{width:16px;height:16px}
+body.desktop .desk-bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 12px 8px}
+body.desktop .desk-bulk .sel-count{font-size:12px;font-weight:700;color:var(--blue-d);background:var(--blue-bg);padding:6px 10px;border-radius:8px}
+
 body.mobile .panel{margin:0 8px 8px}
 body.desktop .panel{margin:0 12px 10px}
 body.desktop .sticky-bar{box-shadow:0 1px 6px rgba(0,0,0,.06)}
@@ -178,14 +187,14 @@ body.desktop .nbtn .ni{font-size:19px}
 <div id="app"></div>
 <script>
 const $=(s,c=document)=>c.querySelector(s);
-const el=(tag,a={},...ch)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(a)){if(k==='class')e.className=v;else if(k==='style'&&typeof v==='object')Object.assign(e.style,v);else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='html')e.innerHTML=v;else e.setAttribute(k,v);}ch.flat(Infinity).forEach(c=>{if(c==null)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});return e;};
+const el=(tag,a={},...ch)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(a)){if(v==null||v===false)continue;if(k==='class')e.className=v;else if(k==='style'&&typeof v==='object')Object.assign(e.style,v);else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);else if(k==='html')e.innerHTML=v;else if(k in e && typeof v!=='object'){try{e[k]=v;}catch(_){e.setAttribute(k,v);}}else e.setAttribute(k,v);}ch.flat(Infinity).forEach(c=>{if(c==null)return;e.appendChild(typeof c==='string'?document.createTextNode(c):c);});return e;};
 const normCol=v=>{let t=String(v||'').trim().toLowerCase().replace(/%/g,'pct');const m={' ':'_','-':'_','ł':'l','ó':'o','ż':'z','ź':'z','ć':'c','ś':'s','ą':'a','ę':'e','ń':'n'};return[...t].map(c=>m[c]||c).join('');};
 const normEan=v=>{if(v==null)return'';let t=String(v).trim();if(!t||t.toLowerCase()==='nan')return'';if(t.startsWith("'"))t=t.slice(1);t=t.replace(/ /g,'');if(t.endsWith('.0'))t=t.slice(0,-2);return t;};
 const toNum=v=>{if(v==null)return null;if(typeof v==='number')return isNaN(v)?null:v;let t=String(v).trim();if(!t||t==='-'||t==='nan'||t==='None')return null;t=t.replace(/ /g,'').replace(',','.');const n=parseFloat(t);return isNaN(n)?null:n;};
 const money=v=>(v==null||isNaN(v))?'—':v.toFixed(2);
 const pf=v=>(v==null||isNaN(v))?'—':v.toFixed(2)+'%';
 
-let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false};
+let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,activeRowKey:null,lastSelectedRowKey:null,desktopKeyboardBound:false};
 
 const AUTO_DATA = {
   distUrl: 'data/latest_wszyscy_dystrybutorzy.xlsx',
@@ -265,8 +274,8 @@ window.addEventListener('resize', ()=>{
     cl.classList.toggle('one-column', f.length < 2);
   }
 });
-function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc}));}catch(e){}}
-function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;}catch(e){}}
+function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,ar:S.activeRowKey}));}catch(e){}}
+function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.ar)S.activeRowKey=s.ar;}catch(e){}}
 
 function parseXL(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){no(err);}};r.onerror=()=>no(new Error('Błąd'));r.readAsArrayBuffer(f);})}
 function expXL(d,fn){const ws=XLSX.utils.json_to_sheet(d);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Wynik');XLSX.writeFile(wb,fn);}
@@ -333,6 +342,76 @@ function exitSel(){S.selRows.clear();S.selMode=false;updCards();}
 function selAll(){getFilt().slice(0,500).forEach(r=>S.selRows.add(r.row_key));S.selMode=true;updCards();}
 function doExp(){const d=getFilt().map(r=>{const o={};COLS.forEach(c=>o[TIT[c]||c]=r[c]);return o;});if(!d.length){S.status='Brak.';render();return;}expXL(d,'wynik_porownania.xlsx');S.status='Eksportowano.';render();}
 
+
+function ensureActiveRow(f){
+  if(!f.length){S.activeRowKey=null;return;}
+  if(!S.activeRowKey || !f.some(r=>r.row_key===S.activeRowKey)) S.activeRowKey=f[0].row_key;
+}
+
+function moveActiveRow(step){
+  const f=getFilt();
+  if(!f.length) return;
+  ensureActiveRow(f);
+  let idx=f.findIndex(r=>r.row_key===S.activeRowKey);
+  if(idx<0) idx=0;
+  idx=Math.max(0, Math.min(f.length-1, idx+step));
+  S.activeRowKey=f[idx].row_key;
+  S.expRow=S.activeRowKey;
+  save();
+  updCards();
+  const elRow=document.querySelector(`tr[data-row-key="${S.activeRowKey}"]`);
+  if(elRow) elRow.scrollIntoView({block:'nearest'});
+}
+
+function toggleSelectedRowRange(targetKey, withRange){
+  const f=getFilt();
+  if(!f.length) return;
+  if(!withRange || !S.lastSelectedRowKey){
+    if(S.selRows.has(targetKey)) S.selRows.delete(targetKey); else S.selRows.add(targetKey);
+    S.lastSelectedRowKey=targetKey;
+    return;
+  }
+  const a=f.findIndex(r=>r.row_key===S.lastSelectedRowKey);
+  const b=f.findIndex(r=>r.row_key===targetKey);
+  if(a<0 || b<0){
+    if(S.selRows.has(targetKey)) S.selRows.delete(targetKey); else S.selRows.add(targetKey);
+    S.lastSelectedRowKey=targetKey;
+    return;
+  }
+  const [start,end]=a<b?[a,b]:[b,a];
+  for(let i=start;i<=end;i++) S.selRows.add(f[i].row_key);
+  S.lastSelectedRowKey=targetKey;
+}
+
+function bindDesktopKeyboard(){
+  if(S.desktopKeyboardBound) return;
+  S.desktopKeyboardBound = true;
+  document.addEventListener('keydown', (e)=>{
+    const mode=document.body.getAttribute('data-device-mode') || detectDeviceMode();
+    if(mode!=='desktop') return;
+    const tag=(document.activeElement && document.activeElement.tagName || '').toLowerCase();
+    const inInput=['input','textarea','select'].includes(tag);
+    if(inInput) return;
+
+    if(e.key==='ArrowDown'){
+      e.preventDefault();
+      moveActiveRow(1);
+      return;
+    }
+    if(e.key==='ArrowUp'){
+      e.preventDefault();
+      moveActiveRow(-1);
+      return;
+    }
+    if(e.key===' '){
+      if(!S.activeRowKey) return;
+      e.preventDefault();
+      togRef(S.activeRowKey);
+      return;
+    }
+  });
+}
+
 let _st=null;function sDeb(){if(_st)clearTimeout(_st);_st=setTimeout(()=>updCards(),80);}
 
 function updCards(){
@@ -359,23 +438,42 @@ function updCards(){
   }
 
   if(mode==='desktop'){
-    const prodVals=[...new Set(S.resultDf.filter(r=>!S.delKeys.has(r.row_key)).map(r=>String(r.producent||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
-    const statVals=[...new Set(S.resultDf.filter(r=>!S.delKeys.has(r.row_key)).map(r=>String(r.status||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+    const baseRows=S.resultDf.filter(r=>!S.delKeys.has(r.row_key));
+    const prodVals=[...new Set(baseRows.map(r=>String(r.producent||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+    const statVals=[...new Set(baseRows.map(r=>String(r.status||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pl'));
+
+    const prodSelect=el('select',{class:'desk-filter',onChange:e=>{S.filters.producent=e.target.value;updCards();}},
+      el('option',{value:''},'Producent: wszyscy'),
+      ...prodVals.map(v=>el('option',{value:v},v))
+    );
+    prodSelect.value=S.filters.producent||'';
+
+    const statSelect=el('select',{class:'desk-filter',onChange:e=>{S.filters.status=e.target.value;updCards();}},
+      el('option',{value:''},'Status: wszystkie'),
+      ...statVals.map(v=>el('option',{value:v},v))
+    );
+    statSelect.value=S.filters.status||'';
 
     const tb=el('div',{class:'desk-toolbar'},
       el('span',{class:'desk-label'},'Globalne filtry:'),
-      el('select',{class:'desk-filter',onChange:e=>{S.filters.producent=e.target.value;updCards();}},
-        el('option',{value:''},'Producent: wszyscy'),
-        ...prodVals.map(v=>el('option',{value:v,selected:(S.filters.producent||'')===v},v))
-      ),
-      el('select',{class:'desk-filter',onChange:e=>{S.filters.status=e.target.value;updCards();}},
-        el('option',{value:''},'Status: wszystkie'),
-        ...statVals.map(v=>el('option',{value:v,selected:(S.filters.status||'')===v},v))
-      ),
+      prodSelect,
+      statSelect,
       el('button',{class:'table-btn',onClick:()=>{S.filters.producent='';S.filters.status='';S.filters._global='';const si=document.getElementById('si');if(si)si.value='';updCards();}},'Wyczyść filtry'),
       el('button',{class:'table-btn table-btn-blue',onClick:doExp},'Eksportuj')
     );
     cc.appendChild(tb);
+
+    if(S.selRows.size){
+      cc.appendChild(el('div',{class:'desk-bulk'},
+        el('span',{class:'sel-count'},`Zaznaczone: ${S.selRows.size}`),
+        el('button',{class:'table-btn',onClick:bulkTog},'Przełącz tryb'),
+        el('button',{class:'table-btn',onClick:()=>{S.editRow='__bulk__';S.editVal='';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Ustaw Cena X'),
+        el('button',{class:'table-btn',onClick:bulkDel},'Usuń zaznaczone'),
+        el('button',{class:'table-btn',onClick:()=>{S.selRows.clear();updCards();}},'Odznacz')
+      ));
+    }
+
+    ensureActiveRow(f);
     cc.appendChild(renderDesktopTable(f));
     return;
   }
@@ -461,6 +559,7 @@ function mkPanel(app){
 }
 
 
+
 function renderDesktopTable(rows){
   const wrap=el('div',{class:'table-wrap'});
   const box=el('div',{class:'table-box'});
@@ -475,6 +574,21 @@ function renderDesktopTable(rows){
     ['price_x','Cena X'],['price_x_source','Źr'],['margin_floor_to_price_x_pct','Marża dno %'],
     ['margin_purchase_to_price_x_pct','Marża zakup %'],['difference_amount','Różnica kw'],['difference_percent','Różnica %'],['status','Status']
   ];
+
+  const allVisibleSelected = rows.length && rows.every(r=>S.selRows.has(r.row_key));
+  hr.appendChild(el('th',{class:'chk'},
+    el('input',{
+      type:'checkbox',
+      class:'row-check',
+      checked: allVisibleSelected ? 'checked' : null,
+      onClick:(e)=>e.stopPropagation(),
+      onChange:(e)=>{
+        if(e.target.checked) rows.slice(0,1000).forEach(r=>S.selRows.add(r.row_key));
+        else rows.slice(0,1000).forEach(r=>S.selRows.delete(r.row_key));
+        updCards();
+      }
+    })
+  ));
   cols.forEach(([key,label])=>{
     hr.appendChild(el('th',{onClick:()=>hSort(key),style:{cursor:'pointer'}},label+(S.sortCol===key?(S.sortDesc?' ▼':' ▲'):'')));
   });
@@ -483,8 +597,36 @@ function renderDesktopTable(rows){
   const tbody=el('tbody');
 
   rows.slice(0,1000).forEach(r=>{
-    const cls = r.status==='Drożsi'?'status-drozsi':r.status==='Tańsi'?'status-tansi':r.status==='Remis'?'status-remis':'';
-    const tr=el('tr',{class:cls+(S.expRow===r.row_key?' active-row':'')});
+    const statusCls = r.status==='Drożsi'?'status-drozsi':r.status==='Tańsi'?'status-tansi':r.status==='Remis'?'status-remis':'';
+    const selectedCls = S.selRows.has(r.row_key)?' selected-row':'';
+    const activeCls = S.activeRowKey===r.row_key?' active-row':'';
+    const tr=el('tr',{
+      class: statusCls + selectedCls + activeCls,
+      'data-row-key': r.row_key,
+      onClick:(e)=>{
+        if(e.target && e.target.closest('button,input')) return;
+        S.activeRowKey = r.row_key;
+        S.expRow = r.row_key;
+        save();
+        updCards();
+      },
+      onDblClick:()=>{ togRef(r.row_key); }
+    });
+
+    const cb=el('input',{
+      type:'checkbox',
+      class:'row-check',
+      checked: S.selRows.has(r.row_key) ? 'checked' : null,
+      onClick:(e)=>e.stopPropagation(),
+      onChange:(e)=>{
+        S.activeRowKey = r.row_key;
+        toggleSelectedRowRange(r.row_key, e.shiftKey);
+        save();
+        updCards();
+      }
+    });
+    tr.appendChild(el('td',{class:'chk'},cb));
+
     const vals=[
       r.product_id,r.ean,r.producent,r.nazwa,money(r.purchase_price),money(r.floor_purchase_price),money(r.sale_price),
       money(r.market_lowest_price),r.cheapest_distributor,r.reference_mode,money(r.reference_price),r.reference_distributor,
@@ -492,12 +634,13 @@ function renderDesktopTable(rows){
       r.difference_amount!=null?money(r.difference_amount):'—',pf(r.difference_percent),r.status
     ];
     vals.forEach(v=>tr.appendChild(el('td',{},String(v??'—'))));
+
     const act=el('td',{},
-      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();togRef(r.row_key);}},'Tryb'),
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;togRef(r.row_key);}},'Tryb'),
       ' ',
-      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.editRow=r.row_key;S.editVal=r.price_x!=null?r.price_x.toFixed(2):'';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Cena X'),
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;S.editRow=r.row_key;S.editVal=r.price_x!=null?r.price_x.toFixed(2):'';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Cena X'),
       ' ',
-      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();if(confirm('Usunąć?'))delRow(r.row_key);}},'Usuń')
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;if(confirm('Usunąć?'))delRow(r.row_key);}},'Usuń')
     );
     tr.appendChild(act);
     tbody.appendChild(tr);
@@ -509,6 +652,7 @@ function renderDesktopTable(rows){
   wrap.appendChild(box);
 
   if(rows.length>1000)wrap.appendChild(el('p',{class:'lnote'},`Widok tabeli pokazuje 1000 z ${rows.length} rekordów. Zawęź filtry, jeśli chcesz pracować wygodniej.`));
+  wrap.appendChild(el('p',{class:'lnote'},'Sterowanie na komputerze: strzałka góra/dół zmienia aktywny wiersz, spacja przełącza cenę bazową 1 ↔ 2, dwuklik na wierszu też przełącza tryb.'));
   return wrap;
 }
 
@@ -613,7 +757,7 @@ async function registerSW(){
 
 registerSW();
 
-load();render();autoLoadData();
+load();render();bindDesktopKeyboard();autoLoadData();
 </script>
 </body>
 </html>
