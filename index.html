@@ -228,7 +228,7 @@ const toNum=v=>{if(v==null)return null;if(typeof v==='number')return isNaN(v)?nu
 const money=v=>(v==null||isNaN(v))?'—':v.toFixed(2);
 const pf=v=>(v==null||isNaN(v))?'—':v.toFixed(2)+'%';
 
-let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,lastSelectedRowKey:null,desktopScrollTop:0,desktopVirtualStart:0,desktopViewportRows:40};
+let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,activeRowKey:null,lastSelectedRowKey:null,desktopScrollTop:0,desktopVirtualStart:0,desktopViewportRows:40};
 
 const AUTO_DATA = {
   distUrl: 'data/latest_wszyscy_dystrybutorzy.xlsx',
@@ -308,7 +308,7 @@ window.addEventListener('resize', ()=>{
     cl.classList.toggle('one-column', f.length < 2);
   }
 });
-function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,,dst:S.desktopScrollTop}));}catch(e){}}
+function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,dst:S.desktopScrollTop}));}catch(e){}}
 function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.dst!=null)S.desktopScrollTop=s.dst;}catch(e){}}
 
 function parseXL(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){no(err);}};r.onerror=()=>no(new Error('Błąd'));r.readAsArrayBuffer(f);})}
