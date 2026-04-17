@@ -134,7 +134,7 @@ body.desktop .desk-toolbar{display:flex;gap:8px;align-items:center;padding:6px 1
 .table-box{background:var(--surface);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:auto;border:1px solid var(--gray-ll)}
 .desktop-table{width:100%;border-collapse:collapse;min-width:1700px;font-size:12px}
 .desktop-table th{position:sticky;top:0;background:#f8fafc;z-index:2;text-align:left;padding:8px 8px;border-bottom:1px solid var(--gray-ll);white-space:nowrap;font-size:12px;color:#334155}
-.desktop-table td{padding:6px 8px;border-bottom:1px solid #eef2f7;white-space:nowrap}
+.desktop-table td{padding:6px 8px;border-bottom:1px solid #eef2f7;white-space:nowrap;height:34px}
 .desktop-table tr:hover td{background:#f8fbff}
 .desktop-table tr.status-drozsi td{background:#fff1f2}
 .desktop-table tr.status-tansi td{background:#f0fdf4}
@@ -146,7 +146,7 @@ body.desktop .desk-toolbar{display:flex;gap:8px;align-items:center;padding:6px 1
 body.desktop .filter-row-wrap{display:block;padding:0 12px 8px}
 body.desktop .filter-row-wrap .status-text{display:inline-block}
 
-body.desktop .table-box{max-height:calc(100vh - 230px)}
+body.desktop .table-box{max-height:calc(100vh - 230px);overflow:auto;position:relative}
 body.desktop .desktop-table tr{cursor:pointer}
 body.desktop .desktop-table tr.selected-row td{background:#dbeafe !important}
 body.desktop .desktop-table tr.active-row td{outline:2px solid #60a5fa; outline-offset:-2px}
@@ -154,6 +154,9 @@ body.desktop .desktop-table td.chk, body.desktop .desktop-table th.chk{width:42p
 body.desktop .desktop-table input.row-check{width:16px;height:16px}
 body.desktop .desk-bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 12px 8px}
 body.desktop .desk-bulk .sel-count{font-size:12px;font-weight:700;color:var(--blue-d);background:var(--blue-bg);padding:6px 10px;border-radius:8px}
+
+.desktop-table tr.spacer-row td{padding:0 !important;border:none !important;height:auto !important;background:transparent !important}
+.desktop-table tbody tr{height:34px}
 
 body.mobile .panel{margin:0 8px 8px}
 body.desktop .panel{margin:0 12px 10px}
@@ -194,7 +197,7 @@ const toNum=v=>{if(v==null)return null;if(typeof v==='number')return isNaN(v)?nu
 const money=v=>(v==null||isNaN(v))?'—':v.toFixed(2);
 const pf=v=>(v==null||isNaN(v))?'—':v.toFixed(2)+'%';
 
-let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,activeRowKey:null,lastSelectedRowKey:null,desktopKeyboardBound:false};
+let S={distData:null,distCols:[],selDists:{},ownData:null,resultDf:null,redMode:'kwotowo',redVal:'0',filters:{},sortCol:null,sortDesc:false,rowOv:{},delKeys:new Set(),status:'Trwa przygotowanie autoładowania danych...',panel:null,expRow:null,editRow:null,editVal:'',distFn:'',ownFn:'',loading:false,selRows:new Set(),selMode:false,activeRowKey:null,lastSelectedRowKey:null,desktopKeyboardBound:false,desktopScrollTop:0,desktopVirtualStart:0,desktopViewportRows:40};
 
 const AUTO_DATA = {
   distUrl: 'data/latest_wszyscy_dystrybutorzy.xlsx',
@@ -274,8 +277,8 @@ window.addEventListener('resize', ()=>{
     cl.classList.toggle('one-column', f.length < 2);
   }
 });
-function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,ar:S.activeRowKey}));}catch(e){}}
-function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.ar)S.activeRowKey=s.ar;}catch(e){}}
+function save(){try{localStorage.setItem('pc_set',JSON.stringify({rm:S.redMode,rv:S.redVal,ov:S.rowOv,dk:[...S.delKeys],sc:S.sortCol,sd:S.sortDesc,ar:S.activeRowKey,dst:S.desktopScrollTop}));}catch(e){}}
+function load(){try{const r=localStorage.getItem('pc_set');if(!r)return;const s=JSON.parse(r);if(s.rm)S.redMode=s.rm;if(s.rv)S.redVal=s.rv;if(s.ov)S.rowOv=s.ov;if(s.dk)S.delKeys=new Set(s.dk);if(s.sc)S.sortCol=s.sc;if(s.sd!=null)S.sortDesc=s.sd;if(s.ar)S.activeRowKey=s.ar;if(s.dst!=null)S.desktopScrollTop=s.dst;}catch(e){}}
 
 function parseXL(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(err){no(err);}};r.onerror=()=>no(new Error('Błąd'));r.readAsArrayBuffer(f);})}
 function expXL(d,fn){const ws=XLSX.utils.json_to_sheet(d);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Wynik');XLSX.writeFile(wb,fn);}
@@ -560,43 +563,24 @@ function mkPanel(app){
 
 
 
-function renderDesktopTable(rows){
-  const wrap=el('div',{class:'table-wrap'});
-  const box=el('div',{class:'table-box'});
-  const table=el('table',{class:'desktop-table'});
-  const thead=el('thead');
-  const hr=el('tr');
-  const cols=[
-    ['product_id','ID'],['ean','EAN'],['producent','Producent'],['nazwa','Nazwa'],
-    ['purchase_price','Cena zak'],['floor_purchase_price','Cena dno'],['sale_price','Famix'],
-    ['market_lowest_price','Naj. cena'],['cheapest_distributor','Naj. dystr.'],
-    ['reference_mode','Licz od c'],['reference_price','Cena bazowa'],['reference_distributor','Dystrybutor ceny'],
-    ['price_x','Cena X'],['price_x_source','Źr'],['margin_floor_to_price_x_pct','Marża dno %'],
-    ['margin_purchase_to_price_x_pct','Marża zakup %'],['difference_amount','Różnica kw'],['difference_percent','Różnica %'],['status','Status']
-  ];
 
-  const allVisibleSelected = rows.length && rows.every(r=>S.selRows.has(r.row_key));
-  hr.appendChild(el('th',{class:'chk'},
-    el('input',{
-      type:'checkbox',
-      class:'row-check',
-      checked: allVisibleSelected ? 'checked' : null,
-      onClick:(e)=>e.stopPropagation(),
-      onChange:(e)=>{
-        if(e.target.checked) rows.slice(0,1000).forEach(r=>S.selRows.add(r.row_key));
-        else rows.slice(0,1000).forEach(r=>S.selRows.delete(r.row_key));
-        updCards();
-      }
-    })
-  ));
-  cols.forEach(([key,label])=>{
-    hr.appendChild(el('th',{onClick:()=>hSort(key),style:{cursor:'pointer'}},label+(S.sortCol===key?(S.sortDesc?' ▼':' ▲'):'')));
-  });
-  hr.appendChild(el('th',{},'Akcje'));
-  thead.appendChild(hr);
-  const tbody=el('tbody');
+function updateDesktopVirtualRows(rows, tbody, colCount){
+  const rowH = 34;
+  const overscan = 12;
+  const viewportRows = Math.max(18, Math.ceil(((document.querySelector('.table-box')?.clientHeight)||600)/rowH)+overscan);
+  S.desktopViewportRows = viewportRows;
+  const start = Math.max(0, Math.floor((S.desktopScrollTop||0)/rowH)-6);
+  const end = Math.min(rows.length, start + viewportRows);
+  S.desktopVirtualStart = start;
+  tbody.innerHTML='';
+  const beforePx = start * rowH;
+  const afterPx = Math.max(0, (rows.length - end) * rowH);
+  if(beforePx>0){
+    tbody.appendChild(el('tr',{class:'spacer-row'},el('td',{colspan:String(colCount)},'')));
+    tbody.lastChild.firstChild.style.height = beforePx + 'px';
+  }
 
-  rows.slice(0,1000).forEach(r=>{
+  rows.slice(start,end).forEach(r=>{
     const statusCls = r.status==='Drożsi'?'status-drozsi':r.status==='Tańsi'?'status-tansi':r.status==='Remis'?'status-remis':'';
     const selectedCls = S.selRows.has(r.row_key)?' selected-row':'';
     const activeCls = S.activeRowKey===r.row_key?' active-row':'';
@@ -636,22 +620,80 @@ function renderDesktopTable(rows){
     vals.forEach(v=>tr.appendChild(el('td',{},String(v??'—'))));
 
     const act=el('td',{},
-      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;togRef(r.row_key);}},'Tryb'),
-      ' ',
-      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;S.editRow=r.row_key;S.editVal=r.price_x!=null?r.price_x.toFixed(2):'';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Cena X'),
-      ' ',
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;togRef(r.row_key);}},'Tryb'),' ',
+      el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;S.editRow=r.row_key;S.editVal=r.price_x!=null?r.price_x.toFixed(2):'';render();setTimeout(()=>{const i=document.querySelector('.minput');if(i){i.focus();i.select();}},100);}},'Cena X'),' ',
       el('button',{class:'table-btn',onClick:(e)=>{e.stopPropagation();S.activeRowKey=r.row_key;if(confirm('Usunąć?'))delRow(r.row_key);}},'Usuń')
     );
     tr.appendChild(act);
     tbody.appendChild(tr);
   });
 
+  if(afterPx>0){
+    tbody.appendChild(el('tr',{class:'spacer-row'},el('td',{colspan:String(colCount)},'')));
+    tbody.lastChild.firstChild.style.height = afterPx + 'px';
+  }
+}
+
+
+function renderDesktopTable(rows){
+  const wrap=el('div',{class:'table-wrap'});
+  const box=el('div',{class:'table-box'});
+  const table=el('table',{class:'desktop-table'});
+  const thead=el('thead');
+  const hr=el('tr');
+  const cols=[
+    ['product_id','ID'],['ean','EAN'],['producent','Producent'],['nazwa','Nazwa'],
+    ['purchase_price','Cena zak'],['floor_purchase_price','Cena dno'],['sale_price','Famix'],
+    ['market_lowest_price','Naj. cena'],['cheapest_distributor','Naj. dystr.'],
+    ['reference_mode','Licz od c'],['reference_price','Cena bazowa'],['reference_distributor','Dystrybutor ceny'],
+    ['price_x','Cena X'],['price_x_source','Źr'],['margin_floor_to_price_x_pct','Marża dno %'],
+    ['margin_purchase_to_price_x_pct','Marża zakup %'],['difference_amount','Różnica kw'],['difference_percent','Różnica %'],['status','Status']
+  ];
+
+  const visibleSlice = rows.slice(S.desktopVirtualStart, Math.min(rows.length, S.desktopVirtualStart + S.desktopViewportRows));
+  const allVisibleSelected = visibleSlice.length && visibleSlice.every(r=>S.selRows.has(r.row_key));
+  hr.appendChild(el('th',{class:'chk'},
+    el('input',{
+      type:'checkbox',
+      class:'row-check',
+      checked: allVisibleSelected ? 'checked' : null,
+      onClick:(e)=>e.stopPropagation(),
+      onChange:(e)=>{
+        const slice = rows.slice(S.desktopVirtualStart, Math.min(rows.length, S.desktopVirtualStart + S.desktopViewportRows));
+        if(e.target.checked) slice.forEach(r=>S.selRows.add(r.row_key));
+        else slice.forEach(r=>S.selRows.delete(r.row_key));
+        updCards();
+      }
+    })
+  ));
+  cols.forEach(([key,label])=>{
+    hr.appendChild(el('th',{onClick:()=>hSort(key),style:{cursor:'pointer'}},label+(S.sortCol===key?(S.sortDesc?' ▼':' ▲'):'')));
+  });
+  hr.appendChild(el('th',{},'Akcje'));
+  thead.appendChild(hr);
+  const tbody=el('tbody');
   table.appendChild(thead);
   table.appendChild(tbody);
   box.appendChild(table);
   wrap.appendChild(box);
 
-  if(rows.length>1000)wrap.appendChild(el('p',{class:'lnote'},`Widok tabeli pokazuje 1000 z ${rows.length} rekordów. Zawęź filtry, jeśli chcesz pracować wygodniej.`));
+  const colCount = cols.length + 2;
+  updateDesktopVirtualRows(rows, tbody, colCount);
+
+  let rafPending = false;
+  box.addEventListener('scroll', ()=>{
+    S.desktopScrollTop = box.scrollTop;
+    if(rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(()=>{
+      rafPending = false;
+      updateDesktopVirtualRows(rows, tbody, colCount);
+    });
+  });
+
+  setTimeout(()=>{ box.scrollTop = S.desktopScrollTop||0; }, 0);
+
+  if(rows.length>1000)wrap.appendChild(el('p',{class:'lnote'},`Wyników jest ${rows.length}. W widoku desktop renderowane są tylko widoczne wiersze, żeby program działał szybciej.`));
   wrap.appendChild(el('p',{class:'lnote'},'Sterowanie na komputerze: strzałka góra/dół zmienia aktywny wiersz, spacja przełącza cenę bazową 1 ↔ 2, dwuklik na wierszu też przełącza tryb.'));
   return wrap;
 }
